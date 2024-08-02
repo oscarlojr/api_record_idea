@@ -7,7 +7,7 @@ public class Category
 {
     [BsonId]
     [BsonRepresentation(BsonType.String)]
-    public string Id { get; set; } = null!; // Não inicializar aqui
+    public string Id { get; set; } = null!;
 
     public string Name { get; set; } = null!;
     public string Description { get; set; }
