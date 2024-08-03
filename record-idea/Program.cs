@@ -10,6 +10,7 @@ builder.Services.Configure<DatabaseSettings>(
     builder.Configuration.GetSection("DatabaseSettings"));
 
 builder.Services.AddSingleton<CategoryService>();
+builder.Services.AddSingleton<IdeaService>();
 
 builder.Services.AddControllers();
 
