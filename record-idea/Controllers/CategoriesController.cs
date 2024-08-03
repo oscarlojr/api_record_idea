@@ -6,10 +6,12 @@ namespace record_idea.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class CategoriesController : ControllerBase {
+public class CategoriesController : ControllerBase 
+{
     private readonly CategoryService _categoryService;
 
-    public CategoriesController(CategoryService categoryService) {
+    public CategoriesController(CategoryService categoryService) 
+    {
         _categoryService = categoryService;
     }
 
@@ -44,10 +46,12 @@ public class CategoriesController : ControllerBase {
     }
 
     [HttpPut("update-category/{id}")]
-    public async Task<IActionResult> Update(string id, Category updatedCategory) {
+    public async Task<IActionResult> Update(string id, Category updatedCategory) 
+    {
         var category = await _categoryService.GetAsync(id);
 
-        if (category is null) {
+        if (category is null) 
+        {
             return NotFound();
         }
 
@@ -59,10 +63,12 @@ public class CategoriesController : ControllerBase {
     }
 
     [HttpDelete("delete-category/{id}")]
-    public async Task<IActionResult> Delete(string id) {
+    public async Task<IActionResult> Delete(string id) 
+    {
         var category = await _categoryService.GetAsync(id);
 
-        if (category is null) {
+        if (category is null) 
+        {
             return NotFound();
         }
 
