@@ -1,11 +1,12 @@
-namespace record_idea.Models;
-
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
-public class Category {
+namespace record_idea.Models;
+
+public class Category
+{
     [BsonId]
-    [BsonRepresentation(BsonType.ObjectId)]
+    [BsonRepresentation(BsonType.String)]
     public string Id { get; set; } = null!;
 
     public string Name { get; set; } = null!;

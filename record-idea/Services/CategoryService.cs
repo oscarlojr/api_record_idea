@@ -1,12 +1,16 @@
-using MongoDB.Driver;
 using Microsoft.Extensions.Options;
+using MongoDB.Driver;
 using record_idea.Configurations;
 using record_idea.Models;
 
-public class CategoryService {
+namespace record_idea.Services;
+
+public class CategoryService
+{
     private readonly IMongoCollection<Category> _categoriesCollection;
 
-    public CategoryService(IOptions<DatabaseSettings> databaseSettings) {
+    public CategoryService(IOptions<DatabaseSettings> databaseSettings)
+    {
         var mongoClient = new MongoClient(
             databaseSettings.Value.ConnectionString);
 
@@ -23,8 +27,10 @@ public class CategoryService {
     public async Task<Category?> GetAsync(string id) =>
         await _categoriesCollection.Find(x => x.Id == id).FirstOrDefaultAsync();
 
-    public async Task CreateAsync(Category newCategory) =>
+    public async Task CreateAsync(Category newCategory)
+    {
         await _categoriesCollection.InsertOneAsync(newCategory);
+    }
 
     public async Task UpdateAsync(string id, Category updatedCategory) =>
         await _categoriesCollection.ReplaceOneAsync(x => x.Id == id, updatedCategory);
