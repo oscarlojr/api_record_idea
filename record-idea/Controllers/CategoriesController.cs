@@ -1,6 +1,8 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using record_idea.Commands;
 using record_idea.Models;
-using record_idea.Services;
+using record_idea.Queries;
 using record_idea.Utilities;
 
 namespace record_idea.Controllers;
@@ -9,17 +11,17 @@ namespace record_idea.Controllers;
 [Route("api/[controller]")]
 public class CategoriesController : ControllerBase
 {
-    private readonly CategoryService _categoryService;
+    private readonly IMediator _mediator;
 
-    public CategoriesController(CategoryService categoryService)
+    public CategoriesController(IMediator mediator)
     {
-        _categoryService = categoryService;
+        _mediator = mediator;
     }
 
     [HttpGet("get-all-categories")]
     public async Task<ActionResult<Result<List<Category>>>> Get()
     {
-        var result = await _categoryService.GetAsync();
+        var result = await _mediator.Send(new GetAllCategoriesQuery());
         if (!result.IsSuccess)
         {
             return BadRequest(result.Message);
@@ -30,7 +32,7 @@ public class CategoriesController : ControllerBase
     [HttpGet("get-category/{id}")]
     public async Task<ActionResult<Result<Category>>> Get(string id)
     {
-        var result = await _categoryService.GetAsync(id);
+        var result = await _mediator.Send(new GetCategoryByIdQuery { Id = id });
         if (!result.IsSuccess)
         {
             return NotFound(result.Message);
@@ -46,7 +48,7 @@ public class CategoriesController : ControllerBase
             newCategory.Id = Guid.NewGuid().ToString();
         }
 
-        var result = await _categoryService.CreateAsync(newCategory);
+        var result = await _mediator.Send(new CreateCategoryCommand { Category = newCategory });
         if (!result.IsSuccess)
         {
             return BadRequest(result.Message);
@@ -59,7 +61,7 @@ public class CategoriesController : ControllerBase
     public async Task<ActionResult<Result>> Update(string id, Category updatedCategory)
     {
         updatedCategory.Id = id;
-        var result = await _categoryService.UpdateAsync(id, updatedCategory);
+        var result = await _mediator.Send(new UpdateCategoryCommand { Id = id, Category = updatedCategory });
         if (!result.IsSuccess)
         {
             return BadRequest(result.Message);
@@ -71,7 +73,7 @@ public class CategoriesController : ControllerBase
     [HttpDelete("delete-category/{id}")]
     public async Task<ActionResult<Result>> Delete(string id)
     {
-        var result = await _categoryService.RemoveAsync(id);
+        var result = await _mediator.Send(new DeleteCategoryCommand { Id = id });
         if (!result.IsSuccess)
         {
             return NotFound(result.Message);
