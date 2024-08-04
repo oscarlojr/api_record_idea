@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using record_idea.Models;
 using record_idea.Services;
+using record_idea.Utilities;
 
 namespace record_idea.Controllers;
 
@@ -18,65 +19,66 @@ public class IdeasController : ControllerBase
     }
 
     [HttpGet("get-all-ideas")]
-    public async Task<List<Idea>> Get() =>
-        await _ideaService.GetAsync();
+    public async Task<ActionResult<Result<List<Idea>>>> Get()
+    {
+        var result = await _ideaService.GetAsync();
+        return Ok(result);
+    }
 
     [HttpGet("get-idea/{id}")]
-    public async Task<ActionResult<Idea>> Get(string id)
+    public async Task<ActionResult<Result<Idea>>> Get(string id)
     {
-        var idea = await _ideaService.GetAsync(id);
-
-        if (idea is null)
+        var result = await _ideaService.GetAsync(id);
+        if (!result.IsSuccess)
         {
-            return NotFound();
+            return NotFound(result);
         }
-
-        return idea;
+        return Ok(result);
     }
 
     [HttpPost("create-idea")]
-    public async Task<IActionResult> Post(Idea newIdea)
+    public async Task<ActionResult<Result<Idea>>> Post(Idea newIdea)
     {
-        var category = await _categoryService.GetAsync(newIdea.CategoryId);
+        var categoryResult = await _categoryService.GetAsync(newIdea.CategoryId);
 
-        if (category == null)
+        if (!categoryResult.IsSuccess)
         {
-            return BadRequest("Invalid CategoryId");
+            return BadRequest(categoryResult);
         }
-        
+
         if (string.IsNullOrEmpty(newIdea.Id))
         {
             newIdea.Id = Guid.NewGuid().ToString();
         }
 
-        newIdea.CategoryName = category.Name;
+        newIdea.CategoryName = categoryResult.Value.Name;
         newIdea.SetCreatedAt();
-        await _ideaService.CreateAsync(newIdea);
+        var result = await _ideaService.CreateAsync(newIdea);
 
-        return CreatedAtAction(nameof(Get), new { id = newIdea.Id }, newIdea);
+        return CreatedAtAction(nameof(Get), new { id = newIdea.Id }, result);
     }
 
     [HttpPut("update-idea/{id}")]
-    public async Task<IActionResult> Update(string id, Idea updatedIdea)
+    public async Task<ActionResult<Result>> Update(string id, Idea updatedIdea)
     {
-        var idea = await _ideaService.GetAsync(id);
+        var ideaResult = await _ideaService.GetAsync(id);
 
-        if (idea is null)
+        if (!ideaResult.IsSuccess)
         {
-            return NotFound();
+            return NotFound(ideaResult);
         }
 
-        var category = await _categoryService.GetAsync(updatedIdea.CategoryId);
+        var categoryResult = await _categoryService.GetAsync(updatedIdea.CategoryId);
 
-        if (category == null)
+        if (!categoryResult.IsSuccess)
         {
-            return BadRequest("Invalid CategoryId");
+            return BadRequest(categoryResult);
         }
 
-        updatedIdea.CategoryName = category.Name;
-        updatedIdea.Id = idea.Id;
+        updatedIdea.CategoryName = categoryResult.Value.Name;
+        updatedIdea.Id = ideaResult.Value.Id;
 
-        await _ideaService.UpdateAsync(id, updatedIdea);
+        var result = await _ideaService.UpdateAsync(id, updatedIdea);
 
         return NoContent();
     }
@@ -84,14 +86,14 @@ public class IdeasController : ControllerBase
     [HttpDelete("delete-idea/{id}")]
     public async Task<IActionResult> Delete(string id)
     {
-        var idea = await _ideaService.GetAsync(id);
+        var ideaResult = await _ideaService.GetAsync(id);
 
-        if (idea is null)
+        if (!ideaResult.IsSuccess)
         {
-            return NotFound();
+            return NotFound(ideaResult);
         }
 
-        await _ideaService.RemoveAsync(id);
+        var result = await _ideaService.RemoveAsync(id);
 
         return NoContent();
     }

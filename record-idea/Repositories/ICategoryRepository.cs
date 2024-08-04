@@ -4,9 +4,9 @@ namespace record_idea.Repositories;
 
 public interface ICategoryRepository
 {
-    Task<List<Category>> GetAllAsync();
-    Task<Category> GetByIdAsync(string id);
-    Task AddAsync(Category category);
-    Task UpdateAsync(Category category);
-    Task DeleteAsync(string id);
+    Task<List<Category>> GetAsync();
+    Task<Category?> GetAsync(string id);
+    Task CreateAsync(Category newCategory);
+    Task UpdateAsync(string id, Category updatedCategory);
+    Task RemoveAsync(string id);
 }
