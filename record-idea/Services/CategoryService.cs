@@ -1,40 +1,31 @@
-using Microsoft.Extensions.Options;
-using MongoDB.Driver;
-using record_idea.Configurations;
 using record_idea.Models;
+using record_idea.Repositories;
 
 namespace record_idea.Services;
 
 public class CategoryService
 {
-    private readonly IMongoCollection<Category> _categoriesCollection;
+    private readonly ICategoryRepository _categoryRepository;
 
-    public CategoryService(IOptions<DatabaseSettings> databaseSettings)
+    public CategoryService(ICategoryRepository categoryRepository)
     {
-        var mongoClient = new MongoClient(
-            databaseSettings.Value.ConnectionString);
-
-        var mongoDatabase = mongoClient.GetDatabase(
-            databaseSettings.Value.DatabaseName);
-
-        _categoriesCollection = mongoDatabase.GetCollection<Category>(
-            databaseSettings.Value.CategoriesCollectionName);
+        _categoryRepository = categoryRepository;
     }
 
     public async Task<List<Category>> GetAsync() =>
-        await _categoriesCollection.Find(_ => true).ToListAsync();
+        await _categoryRepository.GetAllAsync();
 
     public async Task<Category?> GetAsync(string id) =>
-        await _categoriesCollection.Find(x => x.Id == id).FirstOrDefaultAsync();
+        await _categoryRepository.GetByIdAsync(id);
 
     public async Task CreateAsync(Category newCategory)
     {
-        await _categoriesCollection.InsertOneAsync(newCategory);
+        await _categoryRepository.AddAsync(newCategory);
     }
 
     public async Task UpdateAsync(string id, Category updatedCategory) =>
-        await _categoriesCollection.ReplaceOneAsync(x => x.Id == id, updatedCategory);
+        await _categoryRepository.UpdateAsync(updatedCategory);
 
     public async Task RemoveAsync(string id) =>
-        await _categoriesCollection.DeleteOneAsync(x => x.Id == id);
+        await _categoryRepository.DeleteAsync(id);
 }
