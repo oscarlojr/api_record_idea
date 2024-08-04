@@ -1,38 +1,29 @@
-using Microsoft.Extensions.Options;
-using MongoDB.Driver;
-using record_idea.Configurations;
 using record_idea.Models;
+using record_idea.Repositories;
 
 namespace record_idea.Services;
 
 public class IdeaService
 {
-    private readonly IMongoCollection<Idea> _ideasCollection;
+    private readonly IIdeaRepository _ideaRepository;
 
-    public IdeaService(IOptions<DatabaseSettings> databaseSettings)
+    public IdeaService(IIdeaRepository ideaRepository)
     {
-        var mongoClient = new MongoClient(
-            databaseSettings.Value.ConnectionString);
-
-        var mongoDatabase = mongoClient.GetDatabase(
-            databaseSettings.Value.DatabaseName);
-
-        _ideasCollection = mongoDatabase.GetCollection<Idea>(
-            databaseSettings.Value.IdeasCollectionName);
+        _ideaRepository = ideaRepository;
     }
 
     public async Task<List<Idea>> GetAsync() =>
-        await _ideasCollection.Find(_ => true).ToListAsync();
+        await _ideaRepository.GetAsync();
 
     public async Task<Idea?> GetAsync(string id) =>
-        await _ideasCollection.Find(x => x.Id == id).FirstOrDefaultAsync();
+        await _ideaRepository.GetAsync(id);
 
     public async Task CreateAsync(Idea newIdea) =>
-        await _ideasCollection.InsertOneAsync(newIdea);
+        await _ideaRepository.CreateAsync(newIdea);
 
     public async Task UpdateAsync(string id, Idea updatedIdea) =>
-        await _ideasCollection.ReplaceOneAsync(x => x.Id == id, updatedIdea);
+        await _ideaRepository.UpdateAsync(id, updatedIdea);
 
     public async Task RemoveAsync(string id) =>
-        await _ideasCollection.DeleteOneAsync(x => x.Id == id);
+        await _ideaRepository.RemoveAsync(id);
 }

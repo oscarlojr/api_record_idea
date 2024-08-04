@@ -4,7 +4,6 @@ using record_idea.Services;
 
 namespace record_idea.Controllers;
 
-
 [ApiController]
 [Route("api/[controller]")]
 public class IdeasController : ControllerBase
