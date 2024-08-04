@@ -1,78 +1,81 @@
 using Microsoft.AspNetCore.Mvc;
 using record_idea.Models;
 using record_idea.Services;
+using record_idea.Utilities;
 
 namespace record_idea.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class CategoriesController : ControllerBase 
+public class CategoriesController : ControllerBase
 {
     private readonly CategoryService _categoryService;
 
-    public CategoriesController(CategoryService categoryService) 
+    public CategoriesController(CategoryService categoryService)
     {
         _categoryService = categoryService;
     }
 
     [HttpGet("get-all-categories")]
-    public async Task<List<Category>> Get() =>
-        await _categoryService.GetAsync();
+    public async Task<ActionResult<Result<List<Category>>>> Get()
+    {
+        var result = await _categoryService.GetAsync();
+        if (!result.IsSuccess)
+        {
+            return BadRequest(result.Message);
+        }
+        return Ok(result);
+    }
 
     [HttpGet("get-category/{id}")]
-    public async Task<ActionResult<Category>> Get(string id)
+    public async Task<ActionResult<Result<Category>>> Get(string id)
     {
-        var category = await _categoryService.GetAsync(id);
-
-        if (category is null)
+        var result = await _categoryService.GetAsync(id);
+        if (!result.IsSuccess)
         {
-            return NotFound();
+            return NotFound(result.Message);
         }
-
-        return category;
+        return Ok(result);
     }
-    
+
     [HttpPost("create-category")]
-    public async Task<IActionResult> Post(Category newCategory)
+    public async Task<ActionResult<Result<Category>>> Post(Category newCategory)
     {
         if (string.IsNullOrEmpty(newCategory.Id))
         {
             newCategory.Id = Guid.NewGuid().ToString();
         }
 
-        await _categoryService.CreateAsync(newCategory);
+        var result = await _categoryService.CreateAsync(newCategory);
+        if (!result.IsSuccess)
+        {
+            return BadRequest(result.Message);
+        }
 
-        return CreatedAtAction(nameof(Get), new { id = newCategory.Id }, newCategory);
+        return CreatedAtAction(nameof(Get), new { id = newCategory.Id }, result);
     }
 
     [HttpPut("update-category/{id}")]
-    public async Task<IActionResult> Update(string id, Category updatedCategory) 
+    public async Task<ActionResult<Result>> Update(string id, Category updatedCategory)
     {
-        var category = await _categoryService.GetAsync(id);
-
-        if (category is null) 
+        updatedCategory.Id = id;
+        var result = await _categoryService.UpdateAsync(id, updatedCategory);
+        if (!result.IsSuccess)
         {
-            return NotFound();
+            return BadRequest(result.Message);
         }
-
-        updatedCategory.Id = category.Id;
-
-        await _categoryService.UpdateAsync(id, updatedCategory);
 
         return NoContent();
     }
 
     [HttpDelete("delete-category/{id}")]
-    public async Task<IActionResult> Delete(string id) 
+    public async Task<ActionResult<Result>> Delete(string id)
     {
-        var category = await _categoryService.GetAsync(id);
-
-        if (category is null) 
+        var result = await _categoryService.RemoveAsync(id);
+        if (!result.IsSuccess)
         {
-            return NotFound();
+            return NotFound(result.Message);
         }
-
-        await _categoryService.RemoveAsync(id);
 
         return NoContent();
     }

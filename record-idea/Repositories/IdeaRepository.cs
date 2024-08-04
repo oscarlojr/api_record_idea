@@ -11,14 +11,9 @@ public class IdeaRepository : IIdeaRepository
 
     public IdeaRepository(IOptions<DatabaseSettings> databaseSettings)
     {
-        var mongoClient = new MongoClient(
-            databaseSettings.Value.ConnectionString);
-
-        var mongoDatabase = mongoClient.GetDatabase(
-            databaseSettings.Value.DatabaseName);
-
-        _ideasCollection = mongoDatabase.GetCollection<Idea>(
-            databaseSettings.Value.IdeasCollectionName);
+        var mongoClient = new MongoClient(databaseSettings.Value.ConnectionString);
+        var mongoDatabase = mongoClient.GetDatabase(databaseSettings.Value.DatabaseName);
+        _ideasCollection = mongoDatabase.GetCollection<Idea>(databaseSettings.Value.IdeasCollectionName);
     }
 
     public async Task<List<Idea>> GetAsync() =>
